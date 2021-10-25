@@ -6,7 +6,7 @@ INPUTS_DIR = f"{os.path.dirname(os.path.realpath(__file__))}/../inputs"
 def chunks(s: bytes, n: int) -> list[bytes]:
   return [bytes(s[i:i+n]) for i in range(0, len(s), n)]
 
-def sha256(*blocks: list[bytes]) -> bytes:
+def sha256(*blocks: bytes) -> bytes:
   hasher = hashlib.sha256()
   for block in blocks:
     hasher.update(block)
