@@ -30,11 +30,10 @@ def decrypt_byte(text: list[int], block: list[int], b: int) -> int:
     text[-1-b] ^= (b+1) ^ guess
   raise Exception("Could not guess the byte!")
 
-def pad_oracle_decrypt(msg: bytes, iv: bytes) -> bytes:
-  iv, msg = list(iv), list(msg)
-  plaintext = []
+def pad_oracle_decrypt(msg: list[int], iv: list[int]) -> bytes:
+  plaintext: list[int] = []
   for i in range(0, len(msg), 16):
-    decrypted = []
+    decrypted: list[int] = []
     for b in range(16):
       text = iv + msg[0:i]
       for j,x in enumerate(decrypted):
@@ -44,7 +43,7 @@ def pad_oracle_decrypt(msg: bytes, iv: bytes) -> bytes:
   return Padding.unpad(bytes(plaintext), AES.block_size)
 
 def main() -> None:
-  plaintext = pad_oracle_decrypt(TARGET, IV)
+  plaintext = pad_oracle_decrypt(list(TARGET), list(IV))
   print("Decrypted:", plaintext)
 
 if __name__ == "__main__":
