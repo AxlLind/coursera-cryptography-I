@@ -7,9 +7,9 @@ def xor(a: block, b: block) -> block:
 
 def as_blocks(s: str) -> list[block]:
   lst = bytes.fromhex(s)
-  return [lst[i:i + 16] for i in range(0, len(lst), 16)]
+  return [list(lst[i:i + 16]) for i in range(0, len(lst), 16)]
 
-def blocks_to_bytes(blocks: list[block]) -> str:
+def blocks_to_bytes(blocks: list[block]) -> bytes:
   return bytes(b for block in blocks for b in block)
 
 def aes_ebc(key: block, block: block, mode: str) -> block:
@@ -21,13 +21,13 @@ def aes_cbc_decrypt(key: block, ciphertext: list[block]) -> list[block]:
   plaintext = []
   for i in reversed(range(1, len(ciphertext))):
     plaintext += [xor(ciphertext[i-1], aes_ebc(key, ciphertext[i], "decrypt"))]
-  return reversed(plaintext)
+  return list(reversed(plaintext))
 
 def aes_ctr_decrypt(key: block, ciphertext: list[block]) -> list[block]:
   iv = int.from_bytes(bytes(ciphertext[0]), "big")
   plaintext = []
   for i, block in enumerate(ciphertext[1:]):
-    next_iv = (iv + i).to_bytes(16, byteorder="big")
+    next_iv = list((iv + i).to_bytes(16, byteorder="big"))
     plaintext += [xor(block, aes_ebc(key, next_iv, "encrypt"))]
   return plaintext
 
