@@ -1,19 +1,16 @@
 from typing import Iterable
 
-def repeated_mul(state: int, factor: int, modulus: int, times: int) -> Iterable[tuple[int,int]]:
-  for i in range(times):
+def repeated_mul(factor: int, modulus: int, times: int) -> Iterable[tuple[int,int]]:
+  state = 1
+  for i in range(1, times):
     state = (state * factor) % modulus
-    yield (i+1, state)
-
-def build_hashtable(g: int, p: int, h, B: int) -> dict[int, int]:
-  table = {}
-  for x1, y in repeated_mul(1, pow(g, -1, p), p, B):
-    table[h * y % p] = x1
-  return table
+    yield (i, state)
 
 def dlog(p: int, g: int, h: int, B: int) -> int:
-  table = build_hashtable(g, p, h, B)
-  for x0, y in repeated_mul(1, pow(g, B, p), p, B):
+  table = {}
+  for x1, y in repeated_mul(pow(g, -1, p), p, B):
+    table[h * y % p] = x1
+  for x0, y in repeated_mul(pow(g, B, p), p, B):
     if y in table:
       return (x0 * B + table[y]) % p
   raise Exception("Could not find inverse?")
@@ -27,7 +24,7 @@ def main() -> None:
   x = dlog(p, g, h, B)
   assert pow(g, x, p) == h
 
-  print(f"x = {x}")
+  print(x)
 
 if __name__ == "__main__":
   main()
