@@ -51,8 +51,8 @@ def main() -> None:
   possible_xor_pairs = possible_xor_results(string.ascii_letters +  " ")
   likely_keys = compute_likely_keys(ciphertexts, possible_xor_pairs)
 
-  for cs in ciphertexts:
-    print(plaintext_guess(cs, likely_keys))
+  for i, cs in enumerate(ciphertexts):
+    print(f"{str(i).ljust(2)} |", plaintext_guess(cs, likely_keys))
 
 if __name__ == "__main__":
   main()
