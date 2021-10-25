@@ -1,4 +1,5 @@
 from Crypto.Cipher import AES
+from Crypto.Util   import Padding
 
 block = list[int]
 
@@ -9,8 +10,11 @@ def as_blocks(s: str) -> list[block]:
   lst = bytes.fromhex(s)
   return [list(lst[i:i + 16]) for i in range(0, len(lst), 16)]
 
-def blocks_to_bytes(blocks: list[block]) -> bytes:
-  return bytes(b for block in blocks for b in block)
+def blocks_to_bytes(blocks: list[block], unpad: bool) -> str:
+  ans = bytes(b for block in blocks for b in block)
+  if unpad:
+    ans = Padding.unpad(ans, AES.block_size)
+  return ans.decode("ascii")
 
 def aes_ebc(key: block, block: block, mode: str) -> block:
   cipher = AES.new(bytes(key), AES.MODE_ECB)
@@ -41,10 +45,10 @@ def main() -> None:
     as_blocks("770b80259ec33beb2561358a9f2dc617e46218c0a53cbeca695ae45faa8952aa0e311bde9d4e01726d3184c34451"),
   ]
 
-  print("cbc 1:", blocks_to_bytes(aes_cbc_decrypt(cbc_key, ciphertexts[0])))
-  print("cbc 2:", blocks_to_bytes(aes_cbc_decrypt(cbc_key, ciphertexts[1])))
-  print("ctr 1:", blocks_to_bytes(aes_ctr_decrypt(ctr_key, ciphertexts[2])))
-  print("ctr 2:", blocks_to_bytes(aes_ctr_decrypt(ctr_key, ciphertexts[3])))
+  print("cbc 1:", blocks_to_bytes(aes_cbc_decrypt(cbc_key, ciphertexts[0]), True))
+  print("cbc 2:", blocks_to_bytes(aes_cbc_decrypt(cbc_key, ciphertexts[1]), True))
+  print("ctr 1:", blocks_to_bytes(aes_ctr_decrypt(ctr_key, ciphertexts[2]), False))
+  print("ctr 2:", blocks_to_bytes(aes_ctr_decrypt(ctr_key, ciphertexts[3]), False))
 
 if __name__ == "__main__":
   main()
