@@ -15,6 +15,7 @@ def challenge2(n: int) -> int:
     m = a - isqrt(a*a - n)
     if n % m == 0:
       return m
+  raise Exception("Unreachable")
 
 def challenge3(n: int) -> int:
   # 'a' lands between two integers, so multiply everything by 2
@@ -24,6 +25,7 @@ def challenge3(n: int) -> int:
       return m // 4
     if n % (m // 6) == 0:
       return m // 6
+  raise Exception("Unreachable")
 
 def challenge4(n: int, text: int) -> str:
   p = challenge1(n)
