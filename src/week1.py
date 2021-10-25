@@ -2,26 +2,26 @@ import string
 from itertools   import combinations
 from collections import defaultdict
 
-def plaintext_guess(target: bytes, possible_keys: list[set[int]]) -> str:
+def plaintext_guess(target: bytes, likely_keys: list[list[int]]) -> str:
   """ Given a list of possible keys, returns a guess of the plain text"""
-  return ''.join(chr(x ^ min(keys)) for x, keys in zip(target, possible_keys))
+  return ''.join(chr(x ^ min(keys)) for x, keys in zip(target, likely_keys))
 
-def possible_xor_results(charset: str) -> defaultdict[int, list[(str,str)]]:
+def possible_xor_results(s: str) -> defaultdict[int, list[tuple[int,int]]]:
   """ A mapping of each cipher byte x -> [(a,b) | a^b == x] """
-  charset = [ord(c) for c in charset]
+  charset = [ord(c) for c in s]
   res = defaultdict(lambda: [])
   for a,b in combinations(charset, r=2):
     res[a^b] += [(a,b)]
   res[0] = [(a,a) for a in charset]
   return res
 
-def compute_possible_keys(ciphertexts: list[bytes], possible_xor_pairs: defaultdict[int, list[(str,str)]]) -> list[list[int]]:
+def compute_likely_keys(ciphertexts: list[bytes], possible_xor_pairs: defaultdict[int, list[tuple[int,int]]]) -> list[list[int]]:
   """ Computes all cipherbytes which are possible, given the cipher texts """
   possible_keys = [defaultdict(int) for _ in range(len(ciphertexts[0]))]
   for c1, c2 in combinations(ciphertexts, r=2):
     for keys, b1, b2 in zip(possible_keys, c1, c2):
       possible_cipher_chars = set()
-      for x,y in possible_xor_pairs[b1^b2]: # a^b
+      for x,y in possible_xor_pairs[b1^b2]:
         possible_cipher_chars |= {b1^x, b1^y}
       for c in possible_cipher_chars:
         keys[c] += 1
@@ -49,10 +49,10 @@ def main() -> None:
   ]
 
   possible_xor_pairs = possible_xor_results(string.ascii_letters +  " ")
-  possible_keys = compute_possible_keys(ciphertexts, possible_xor_pairs)
+  likely_keys = compute_likely_keys(ciphertexts, possible_xor_pairs)
 
   for cs in ciphertexts:
-    print(plaintext_guess(cs, possible_keys))
+    print(plaintext_guess(cs, likely_keys))
 
 if __name__ == "__main__":
   main()
