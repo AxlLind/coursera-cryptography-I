@@ -7,7 +7,7 @@ N3 = 720062263747350425279564435525583738338084451473999841826653057981916355690
 CIPHERTEXT = 22096451867410381776306561134883418017410069787892831071731839143676135600120538004282329650473509424343946219751512256465839967942889460764542040581564748988013734864120452325229320176487916666402997509188729971690526083222067771600019329260870009579993724077458967773697817571267229951148662959627934791540
 
 def challenge1(n: int) -> int:
-  a = isqrt(n - 1) + 1
+  a = isqrt(n-1) + 1
   return a - isqrt(a*a - n)
 
 def challenge2(n: int) -> int:
@@ -27,16 +27,16 @@ def challenge3(n: int) -> int:
       return m // 6
   raise Exception("Unreachable")
 
-def challenge4(n: int, text: int) -> str:
+def challenge4(n: int, c: int) -> str:
   p = challenge1(n)
   q = n // p
   d = pow(65537, -1, (p-1) * (q-1))
 
-  plain_text = pow(text, d, n).to_bytes(128, "big")
-  assert plain_text[0] == 0x02
+  plaintext = pow(c, d, n).to_bytes(128, "big")
+  assert plaintext[0] == 0x02
 
-  pad_index = plain_text.rindex(0)
-  return plain_text[pad_index+1:].decode("ascii")
+  pad_index = plaintext.rindex(0)
+  return plaintext[pad_index+1:].decode("ascii")
 
 def main() -> None:
   print("Challenge 1:", challenge1(N1))
