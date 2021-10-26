@@ -16,7 +16,7 @@ CIPHERTEXTS = [
   bytes.fromhex("32510ba9babebbbefd001547a810e67149caee11d945cd7fc81a05e9f85aac650e9052ba6a8cd8257bf14d13e6f0a803b54fde9e77472dbff89d71b57bddef121336cb85ccb8f3315f4b52e301d16e9f52f904"), # <- target
 ]
 
-def possible_xor_results(s: str) -> defaultdict[int, list[tuple[int,int]]]:
+def possible_xor_results(s: str) -> defaultdict[int, list[tuple[int, int]]]:
   """ A mapping of each cipher byte x -> [(a,b) | a^b == x] """
   charset = [ord(c) for c in s]
   res = defaultdict(list)
@@ -37,15 +37,12 @@ def main() -> None:
       for c in possible_cipher_chars:
         keys[c] += 1
 
-  # filter out the chars that was possible in the most cipher text pairs
-  likely_keys = []
-  for keys in possible_keys:
-    max_value = max(keys.values())
-    likely_keys.append([k for k,v in keys.items() if v == max_value])
+  # guess the cipher byte that was possible in the most ciphertext pairs
+  key_guess = [max(keys, key=keys.get) for keys in possible_keys]
 
   for i, cs in enumerate(CIPHERTEXTS):
-    plaintext_guess = ''.join(chr(x ^ min(keys)) for x, keys in zip(cs, likely_keys))
-    print(str(i).ljust(2), "|", plaintext_guess)
+    plaintext_guess = ''.join(chr(x ^ k) for x, k in zip(cs, key_guess))
+    print(str(i+1).ljust(2), "|", plaintext_guess)
 
 if __name__ == "__main__":
   main()
