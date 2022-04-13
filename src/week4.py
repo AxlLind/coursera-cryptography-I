@@ -1,6 +1,6 @@
 import time
-from Crypto.Cipher import AES
-from Crypto.Util   import Padding
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import padding
 
 # Note: When I did this exercise the padding oracle server was down
 #       so this script runs against a simulated HTTP server with a
@@ -10,11 +10,16 @@ IV = b"DLC93kbZj2NOH5NS"
 KEY = b"mQwnjVVQhYDWYBoR"
 TARGET = bytes.fromhex("47709899582a1e39001d2e93a5577276698039f3b73427a4b78456b0f3a16c06bf1c47c10928af9c48167868f858062b2a6c8bc491748612090ed8af6d164fea")
 
+def unpad(plaintext: bytes) -> bytes:
+  unpadder = padding.PKCS7(128).unpadder()
+  return unpadder.update(plaintext) + unpadder.finalize()
+
 def oracle_test(iv: bytes, ciphertext: bytes) -> int:
   time.sleep(0.016) # sleep 16ms to simulate HTTP request
-  plaintext = AES.new(KEY, AES.MODE_CBC, iv).decrypt(ciphertext)
+  decryptor = Cipher(algorithms.AES(KEY), modes.CBC(iv)).decryptor()
+  plaintext = decryptor.update(ciphertext) + decryptor.finalize()
   try:
-    Padding.unpad(plaintext, AES.block_size)
+    unpad(plaintext)
   except ValueError:
     return 403
   return 404
@@ -30,7 +35,8 @@ def decrypt_byte(text: list[int], block: list[int], b: int) -> int:
     text[-1-b] ^= (b+1) ^ guess
   raise Exception("Could not guess the byte!")
 
-def pad_oracle_decrypt(msg: list[int], iv: list[int]) -> bytes:
+def main() -> None:
+  msg, iv = list(TARGET), list(IV)
   plaintext: list[int] = []
   for i in range(0, len(msg), 16):
     decrypted: list[int] = []
@@ -40,11 +46,8 @@ def pad_oracle_decrypt(msg: list[int], iv: list[int]) -> bytes:
         text[-1-j] ^= (b+1) ^ x
       decrypted += [decrypt_byte(text, msg[i:i+16], b)]
     plaintext += reversed(decrypted)
-  return Padding.unpad(bytes(plaintext), AES.block_size)
-
-def main() -> None:
-  plaintext = pad_oracle_decrypt(list(TARGET), list(IV))
-  print("Decrypted:", plaintext)
+  decrypted_text = unpad(bytes(plaintext)).decode('ascii')
+  print(f"Decrypted: {decrypted_text}")
 
 if __name__ == "__main__":
   main()
